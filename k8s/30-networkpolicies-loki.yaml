@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all-ingress-except-trusted
+  namespace: oil-loki-blocked
+spec:
+  podSelector:
+    matchLabels:
+      app: oil-loki-blocked
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: oil-loki-blocked
+      podSelector:
+        matchLabels:
+          role: trusted

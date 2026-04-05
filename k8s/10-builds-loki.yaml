@@ -1,0 +1,99 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: oil-essence-loki-web
+  namespace: oil-loki-demo
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: oil-loki-service
+  namespace: oil-loki-demo
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: oil-loki-service
+  namespace: oil-loki-peer
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: oil-loki-service
+  namespace: oil-loki-blocked
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: oil-essence-loki-web
+  namespace: oil-loki-demo
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: oil-essence-loki-web:latest
+  source:
+    type: Binary
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: nodejs:20-ubi9
+        namespace: openshift
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: oil-loki-service
+  namespace: oil-loki-demo
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: oil-loki-service:latest
+  source:
+    type: Binary
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: nodejs:20-ubi9
+        namespace: openshift
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: oil-loki-service
+  namespace: oil-loki-peer
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: oil-loki-service:latest
+  source:
+    type: Binary
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: nodejs:20-ubi9
+        namespace: openshift
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: oil-loki-service
+  namespace: oil-loki-blocked
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: oil-loki-service:latest
+  source:
+    type: Binary
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: nodejs:20-ubi9
+        namespace: openshift

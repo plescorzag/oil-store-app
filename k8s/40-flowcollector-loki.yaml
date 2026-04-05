@@ -1,0 +1,35 @@
+apiVersion: flows.netobserv.io/v1beta2
+kind: FlowCollector
+metadata:
+  name: cluster
+spec:
+  namespace: netobserv
+  deploymentModel: Service
+  agent:
+    type: eBPF
+    ebpf:
+      features:
+      - FlowRTT
+      sampling: 1
+  processor:
+    logTypes: All
+    metrics:
+      server:
+        tls:
+          type: Disabled
+      includeList:
+      - namespace_flows_total
+      - workload_flows_total
+      - workload_ingress_bytes_total
+      - workload_egress_bytes_total
+      - namespace_rtt_seconds
+      - workload_rtt_seconds
+  loki:
+    mode: LokiStack
+  consolePlugin:
+    register: true
+    quickFilters:
+    - name: Oil Essence Loki
+      filter:
+        src_namespace: "oil-loki-demo,oil-loki-peer,oil-loki-blocked"
+        dst_namespace: "oil-loki-demo,oil-loki-peer,oil-loki-blocked"

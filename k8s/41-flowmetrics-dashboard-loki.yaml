@@ -1,0 +1,88 @@
+apiVersion: flows.netobserv.io/v1alpha1
+kind: FlowMetric
+metadata:
+  name: oil-loki-flow-rate
+  namespace: netobserv
+spec:
+  metricName: oil_loki_flow_count
+  type: Counter
+  help: "Flow count for the Oil Essence Loki demo."
+  labels:
+  - SrcK8S_Namespace
+  - DstK8S_Namespace
+  - DstK8S_OwnerName
+  filters:
+  - field: SrcK8S_Namespace
+    matchType: MatchRegex
+    value: "oil-loki-demo|oil-loki-peer|oil-loki-blocked"
+  - field: DstK8S_Namespace
+    matchType: MatchRegex
+    value: "oil-loki-demo|oil-loki-peer|oil-loki-blocked"
+  charts:
+  - dashboardName: Oil Essence Loki
+    sectionName: Traffic
+    title: Total Loki demo flows
+    type: SingleStat
+    queries:
+    - promQL: "sum(rate($METRIC[2m]))"
+      legend: ""
+      top: 1
+  - dashboardName: Oil Essence Loki
+    sectionName: Traffic
+    title: Loki demo flows per destination workload
+    type: StackArea
+    unit: pps
+    queries:
+    - promQL: "sum(rate($METRIC[2m])) by (DstK8S_Namespace, DstK8S_OwnerName)"
+      legend: "{{DstK8S_Namespace}} / {{DstK8S_OwnerName}}"
+      top: 10
+---
+apiVersion: flows.netobserv.io/v1alpha1
+kind: FlowMetric
+metadata:
+  name: oil-loki-rtt
+  namespace: netobserv
+spec:
+  metricName: oil_loki_rtt_seconds
+  type: Histogram
+  valueField: TimeFlowRttNs
+  divider: "1000000000"
+  help: "RTT histogram in seconds for the Oil Essence Loki demo."
+  buckets:
+  - "0.01"
+  - "0.05"
+  - "0.1"
+  - "0.25"
+  - "0.5"
+  - "1"
+  - "2.5"
+  - "5"
+  labels:
+  - DstK8S_Namespace
+  - DstK8S_OwnerName
+  filters:
+  - field: SrcK8S_Namespace
+    matchType: Equal
+    value: "oil-loki-demo"
+  - field: DstK8S_Namespace
+    matchType: MatchRegex
+    value: "oil-loki-demo|oil-loki-peer|oil-loki-blocked"
+  charts:
+  - dashboardName: Oil Essence Loki
+    sectionName: Latency
+    title: Loki demo RTT p95
+    type: Line
+    unit: seconds
+    queries:
+    - promQL: "histogram_quantile(0.95, sum(rate($METRIC_bucket[5m])) by (le, DstK8S_Namespace, DstK8S_OwnerName))"
+      legend: "{{DstK8S_Namespace}} / {{DstK8S_OwnerName}}"
+      top: 10
+  - dashboardName: Oil Essence Loki
+    sectionName: Latency
+    title: Loki demo RTT average
+    type: Line
+    unit: seconds
+    queries:
+    - promQL: "sum(rate($METRIC_sum[5m])) by (DstK8S_Namespace, DstK8S_OwnerName) / sum(rate($METRIC_count[5m])) by (DstK8S_Namespace, DstK8S_OwnerName)"
+      legend: "{{DstK8S_Namespace}} / {{DstK8S_OwnerName}}"
+      top: 10

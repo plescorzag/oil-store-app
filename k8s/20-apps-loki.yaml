@@ -1,0 +1,208 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oil-essence-loki-web
+  namespace: oil-loki-demo
+  labels:
+    app.kubernetes.io/name: oil-essence-loki-web
+    app.kubernetes.io/part-of: oil-essence-loki-demo
+    netobserv.io/demo: oil-essence-loki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oil-essence-loki-web
+  template:
+    metadata:
+      labels:
+        app: oil-essence-loki-web
+        app.kubernetes.io/name: oil-essence-loki-web
+        app.kubernetes.io/part-of: oil-essence-loki-demo
+        netobserv.io/demo: oil-essence-loki
+    spec:
+      containers:
+      - name: web
+        image: image-registry.openshift-image-registry.svc:5000/oil-loki-demo/oil-essence-loki-web:latest
+        imagePullPolicy: Always
+        env:
+        - name: SAME_NS_URL
+          value: http://oil-loki-same-ns:8080/health
+        - name: OTHER_NS_URL
+          value: http://oil-loki-other-ns.oil-loki-peer.svc.cluster.local:8080/health
+        - name: BLOCKED_NS_URL
+          value: http://oil-loki-blocked.oil-loki-blocked.svc.cluster.local:8080/health
+        - name: EXTERNAL_FAST_URL
+          value: https://www.redhat.com
+        - name: EXTERNAL_SLOW_URL
+          value: https://httpbin.org/delay/5
+        - name: EXTERNAL_MISSING_URL
+          value: https://does-not-exist.invalid
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oil-essence-loki-web
+  namespace: oil-loki-demo
+  labels:
+    netobserv.io/demo: oil-essence-loki
+spec:
+  selector:
+    app: oil-essence-loki-web
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: oil-essence-loki-web
+  namespace: oil-loki-demo
+  labels:
+    netobserv.io/demo: oil-essence-loki
+spec:
+  to:
+    kind: Service
+    name: oil-essence-loki-web
+  port:
+    targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oil-loki-same-ns
+  namespace: oil-loki-demo
+  labels:
+    netobserv.io/demo: oil-essence-loki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oil-loki-same-ns
+  template:
+    metadata:
+      labels:
+        app: oil-loki-same-ns
+        netobserv.io/demo: oil-essence-loki
+    spec:
+      containers:
+      - name: service
+        image: image-registry.openshift-image-registry.svc:5000/oil-loki-demo/oil-loki-service:latest
+        imagePullPolicy: Always
+        env:
+        - name: SERVICE_NAME
+          value: oil-loki-same-ns
+        - name: DELAY_MS
+          value: "0"
+        - name: STATUS
+          value: "200"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oil-loki-same-ns
+  namespace: oil-loki-demo
+  labels:
+    netobserv.io/demo: oil-essence-loki
+spec:
+  selector:
+    app: oil-loki-same-ns
+  ports:
+  - port: 8080
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oil-loki-other-ns
+  namespace: oil-loki-peer
+  labels:
+    netobserv.io/demo: oil-essence-loki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oil-loki-other-ns
+  template:
+    metadata:
+      labels:
+        app: oil-loki-other-ns
+        netobserv.io/demo: oil-essence-loki
+    spec:
+      containers:
+      - name: service
+        image: image-registry.openshift-image-registry.svc:5000/oil-loki-peer/oil-loki-service:latest
+        imagePullPolicy: Always
+        env:
+        - name: SERVICE_NAME
+          value: oil-loki-other-ns
+        - name: DELAY_MS
+          value: "150"
+        - name: STATUS
+          value: "200"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oil-loki-other-ns
+  namespace: oil-loki-peer
+  labels:
+    netobserv.io/demo: oil-essence-loki
+spec:
+  selector:
+    app: oil-loki-other-ns
+  ports:
+  - port: 8080
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oil-loki-blocked
+  namespace: oil-loki-blocked
+  labels:
+    netobserv.io/demo: oil-essence-loki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oil-loki-blocked
+  template:
+    metadata:
+      labels:
+        app: oil-loki-blocked
+        netobserv.io/demo: oil-essence-loki
+    spec:
+      containers:
+      - name: service
+        image: image-registry.openshift-image-registry.svc:5000/oil-loki-blocked/oil-loki-service:latest
+        imagePullPolicy: Always
+        env:
+        - name: SERVICE_NAME
+          value: oil-loki-blocked
+        - name: DELAY_MS
+          value: "0"
+        - name: STATUS
+          value: "200"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oil-loki-blocked
+  namespace: oil-loki-blocked
+  labels:
+    netobserv.io/demo: oil-essence-loki
+spec:
+  selector:
+    app: oil-loki-blocked
+  ports:
+  - port: 8080
+    targetPort: 8080

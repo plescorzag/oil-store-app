@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oil-loki-demo
+  labels:
+    app.kubernetes.io/part-of: oil-essence-loki-demo
+    netobserv.io/demo: oil-essence-loki
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oil-loki-peer
+  labels:
+    app.kubernetes.io/part-of: oil-essence-loki-demo
+    netobserv.io/demo: oil-essence-loki
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: oil-loki-blocked
+  labels:
+    app.kubernetes.io/part-of: oil-essence-loki-demo
+    netobserv.io/demo: oil-essence-loki
