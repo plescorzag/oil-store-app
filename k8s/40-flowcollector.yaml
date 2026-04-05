@@ -21,8 +21,8 @@ spec:
       - namespace_flows_total
       - workload_ingress_bytes_total
       - workload_egress_bytes_total
-      - egress_rtt_seconds
-      - ingress_rtt_seconds
+      - namespace_rtt_seconds
+      - workload_rtt_seconds
   consolePlugin:
     register: true
     quickFilters:
