@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Oil Essence Demo</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">NetObserv demo</p>
+        <h1>Oil Essence</h1>
+        <p class="subtitle"> Only for NetObserv demos.</p>
+      </div>
+      <div class="actions">
+        <button data-endpoint="/api/test/fast-external">External URL · expected latency</button>
+        <button data-endpoint="/api/test/slow-external">External URL · high latency</button>
+        <button data-endpoint="/api/test/missing-external">External URL · missing</button>
+        <button data-endpoint="/api/test/same-namespace">Service · same namespace</button>
+        <button data-endpoint="/api/test/other-namespace">Service · other namespace</button>
+        <button data-endpoint="/api/test/blocked-namespace">Service · blocked by netpol</button>
+      </div>
+    </section>
+
+    <section class="status">
+      <h2>Probe result</h2>
+      <pre id="result">Ready.</pre>
+    </section>
+
+    <section>
+      <h2>20 oil essences</h2>
+      <div id="catalog" class="grid"></div>
+    </section>
+  </main>
+
+  <script src="/script.js"></script>
+</body>
+</html>

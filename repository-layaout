@@ -1,0 +1,41 @@
+oil-essence-netobserv-demo/
+├── README.md
+├── deploy.sh
+├── app/
+│   ├── web/
+│   │   ├── package.json
+│   │   ├── server.js
+│   │   └── public/
+│   │       ├── index.html
+│   │       ├── styles.css
+│   │       └── script.js
+│   └── service/
+│       ├── package.json
+│       └── server.js
+└── k8s/
+    ├── 00-namespaces.yaml
+    ├── 10-builds.yaml
+    ├── 20-apps.yaml
+    ├── 30-networkpolicies.yaml
+    ├── 40-flowcollector.yaml
+    ├── 41-flowmetrics-dashboard.yaml
+    └── 42-alertingrule-rtt.yaml
+
+1) App behavior
+
+The main web app exposes test buttons for:
+
+External fast URL
+External slow URL
+External missing URL
+Same-namespace microservice
+Other-namespace microservice
+Blocked microservice protected by a NetworkPolicy
+
+Suggested endpoints:
+
+EXTERNAL_FAST_URL=https://www.redhat.com
+EXTERNAL_SLOW_URL=https://httpbin.org/delay/5
+EXTERNAL_MISSING_URL=https://does-not-exist.invalid
+
+The .invalid domain is useful for a guaranteed failure path in demos.

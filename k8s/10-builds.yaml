@@ -1,0 +1,99 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: oil-essence-web
+  namespace: oil-demo
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: oil-demo-service
+  namespace: oil-demo
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: oil-demo-service
+  namespace: oil-peer
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: oil-demo-service
+  namespace: oil-blocked
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: oil-essence-web
+  namespace: oil-demo
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: oil-essence-web:latest
+  source:
+    type: Binary
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: nodejs:20-ubi9
+        namespace: openshift
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: oil-demo-service
+  namespace: oil-demo
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: oil-demo-service:latest
+  source:
+    type: Binary
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: nodejs:20-ubi9
+        namespace: openshift
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: oil-demo-service
+  namespace: oil-peer
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: oil-demo-service:latest
+  source:
+    type: Binary
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: nodejs:20-ubi9
+        namespace: openshift
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: oil-demo-service
+  namespace: oil-blocked
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: oil-demo-service:latest
+  source:
+    type: Binary
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: nodejs:20-ubi9
+        namespace: openshift

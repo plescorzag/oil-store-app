@@ -1,0 +1,85 @@
+apiVersion: flows.netobserv.io/v1alpha1
+kind: FlowMetric
+metadata:
+  name: oil-demo-flow-rate
+  namespace: netobserv
+spec:
+  metricName: oil_demo_flow_count
+  type: Counter
+  help: "Flow count for the Oil Essence NetObserv demo."
+  labels:
+  - SrcK8S_Namespace
+  - DstK8S_Namespace
+  - DstK8S_OwnerName
+  filters:
+  - field: SrcK8S_Namespace
+    matchType: MatchRegex
+    value: "oil-demo|oil-peer|oil-blocked"
+  charts:
+  - dashboardName: Oil Essence Demo
+    sectionName: Traffic
+    title: Total demo flows
+    type: SingleStat
+    queries:
+    - promQL: "sum(rate($METRIC[2m]))"
+      legend: ""
+      top: 1
+  - dashboardName: Oil Essence Demo
+    sectionName: Traffic
+    title: Demo flows per destination workload
+    type: StackArea
+    unit: pps
+    queries:
+    - promQL: "sum(rate($METRIC[2m])) by (DstK8S_Namespace, DstK8S_OwnerName)"
+      legend: "{{DstK8S_Namespace}} / {{DstK8S_OwnerName}}"
+      top: 7
+---
+apiVersion: flows.netobserv.io/v1alpha1
+kind: FlowMetric
+metadata:
+  name: oil-demo-rtt
+  namespace: netobserv
+spec:
+  metricName: oil_demo_rtt_seconds
+  type: Histogram
+  valueField: TimeFlowRttNs
+  divider: "1000000000"
+  help: "RTT latency histogram in seconds for the Oil Essence NetObserv demo."
+  buckets:
+  - "0.01"
+  - "0.05"
+  - "0.1"
+  - "0.25"
+  - "0.5"
+  - "1"
+  - "2.5"
+  - "5"
+  labels:
+  - DstK8S_Namespace
+  - DstK8S_OwnerName
+  filters:
+  - field: SrcK8S_Namespace
+    matchType: Equal
+    value: "oil-demo"
+  - field: DstK8S_Namespace
+    matchType: MatchRegex
+    value: "oil-demo|oil-peer|oil-blocked"
+  charts:
+  - dashboardName: Oil Essence Demo
+    sectionName: Latency
+    title: Demo RTT p95
+    type: Line
+    unit: seconds
+    queries:
+    - promQL: "histogram_quantile(0.95, sum(rate($METRIC_bucket[5m])) by (le, DstK8S_Namespace, DstK8S_OwnerName))"
+      legend: "{{DstK8S_Namespace}} / {{DstK8S_OwnerName}}"
+      top: 7
+  - dashboardName: Oil Essence Demo
+    sectionName: Latency
+    title: Demo RTT average
+    type: Line
+    unit: seconds
+    queries:
+    - promQL: "sum(rate($METRIC_sum[5m])) by (DstK8S_Namespace, DstK8S_OwnerName) / sum(rate($METRIC_count[5m])) by (DstK8S_Namespace, DstK8S_OwnerName)"
+      legend: "{{DstK8S_Namespace}} / {{DstK8S_OwnerName}}"
+      top: 7

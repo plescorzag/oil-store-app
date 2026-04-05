@@ -1,0 +1,22 @@
+apiVersion: monitoring.openshift.io/v1
+kind: AlertingRule
+metadata:
+  name: oil-demo-rtt-alerts
+  namespace: openshift-monitoring
+spec:
+  groups:
+  - name: OilEssenceDemoRTT
+    rules:
+    - alert: OilEssenceDemoHighRTT
+      expr: |
+        histogram_quantile(
+          0.95,
+          sum(rate(netobserv_oil_demo_rtt_seconds_bucket[5m]))
+          by (le, DstK8S_Namespace, DstK8S_OwnerName)
+        ) > 1
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Oil Essence demo RTT is high"
+        message: "p95 RTT is above 1 second for destination {{ $labels.DstK8S_Namespace }}/{{ $labels.DstK8S_OwnerName }}."

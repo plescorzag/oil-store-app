@@ -1,0 +1,32 @@
+apiVersion: flows.netobserv.io/v1beta2
+kind: FlowCollector
+metadata:
+  name: cluster
+spec:
+  namespace: netobserv
+  deploymentModel: Service
+  agent:
+    type: eBPF
+    ebpf:
+      features:
+      - FlowRTT
+      sampling: 1
+  processor:
+    logTypes: Flows
+    metrics:
+      server:
+        tls:
+          type: Disabled
+      includeList:
+      - namespace_flows_total
+      - workload_ingress_bytes_total
+      - workload_egress_bytes_total
+      - egress_rtt_seconds
+      - ingress_rtt_seconds
+  consolePlugin:
+    register: true
+    quickFilters:
+    - name: Oil Essence Demo
+      filter:
+        src_namespace: "oil-demo,oil-peer,oil-blocked"
+        dst_namespace: "oil-demo,oil-peer,oil-blocked"

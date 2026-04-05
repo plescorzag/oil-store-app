@@ -1,0 +1,187 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oil-essence-web
+  namespace: oil-demo
+  labels:
+    app.kubernetes.io/name: oil-essence-web
+    app.kubernetes.io/part-of: oil-essence-netobserv-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oil-essence-web
+  template:
+    metadata:
+      labels:
+        app: oil-essence-web
+        app.kubernetes.io/name: oil-essence-web
+        app.kubernetes.io/part-of: oil-essence-netobserv-demo
+    spec:
+      containers:
+      - name: web
+        image: image-registry.openshift-image-registry.svc:5000/oil-demo/oil-essence-web:latest
+        imagePullPolicy: Always
+        env:
+        - name: SAME_NS_URL
+          value: http://oil-same-ns:8080/health
+        - name: OTHER_NS_URL
+          value: http://oil-other-ns.oil-peer.svc.cluster.local:8080/health
+        - name: BLOCKED_NS_URL
+          value: http://oil-blocked.oil-blocked.svc.cluster.local:8080/health
+        - name: EXTERNAL_FAST_URL
+          value: https://www.redhat.com
+        - name: EXTERNAL_SLOW_URL
+          value: https://httpbin.org/delay/5
+        - name: EXTERNAL_MISSING_URL
+          value: https://does-not-exist.invalid
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oil-essence-web
+  namespace: oil-demo
+spec:
+  selector:
+    app: oil-essence-web
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: oil-essence-web
+  namespace: oil-demo
+spec:
+  to:
+    kind: Service
+    name: oil-essence-web
+  port:
+    targetPort: http
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oil-same-ns
+  namespace: oil-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oil-same-ns
+  template:
+    metadata:
+      labels:
+        app: oil-same-ns
+    spec:
+      containers:
+      - name: service
+        image: image-registry.openshift-image-registry.svc:5000/oil-demo/oil-demo-service:latest
+        imagePullPolicy: Always
+        env:
+        - name: SERVICE_NAME
+          value: oil-same-ns
+        - name: DELAY_MS
+          value: "0"
+        - name: STATUS
+          value: "200"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oil-same-ns
+  namespace: oil-demo
+spec:
+  selector:
+    app: oil-same-ns
+  ports:
+  - port: 8080
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oil-other-ns
+  namespace: oil-peer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oil-other-ns
+  template:
+    metadata:
+      labels:
+        app: oil-other-ns
+    spec:
+      containers:
+      - name: service
+        image: image-registry.openshift-image-registry.svc:5000/oil-peer/oil-demo-service:latest
+        imagePullPolicy: Always
+        env:
+        - name: SERVICE_NAME
+          value: oil-other-ns
+        - name: DELAY_MS
+          value: "150"
+        - name: STATUS
+          value: "200"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oil-other-ns
+  namespace: oil-peer
+spec:
+  selector:
+    app: oil-other-ns
+  ports:
+  - port: 8080
+    targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: oil-blocked
+  namespace: oil-blocked
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oil-blocked
+  template:
+    metadata:
+      labels:
+        app: oil-blocked
+    spec:
+      containers:
+      - name: service
+        image: image-registry.openshift-image-registry.svc:5000/oil-blocked/oil-demo-service:latest
+        imagePullPolicy: Always
+        env:
+        - name: SERVICE_NAME
+          value: oil-blocked
+        - name: DELAY_MS
+          value: "0"
+        - name: STATUS
+          value: "200"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: oil-blocked
+  namespace: oil-blocked
+spec:
+  selector:
+    app: oil-blocked
+  ports:
+  - port: 8080
+    targetPort: 8080
